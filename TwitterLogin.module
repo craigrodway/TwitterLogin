@@ -71,6 +71,14 @@ class TwitterLogin extends WireData implements Module, ConfigurableModule {
 			// Retrieve user details
 			$twitterInfo = $twoauth->get('account/verify_credentials');
 
+			if (isset($twitterInfo->errors)) {
+				// Something bad happened.
+				$reason = $twitterInfo->errors[0]->code . ': ' . $twitterInfo->errors[0]->message;
+				$this->session->error('TwitterLogin API error. Reason: ' . $reason);
+				$this->doRedirect();
+				return;
+			}
+
 			$this->debug("execute(): Successfully retrieved user info from Twitter. Next: processLogin().");
 
 			// Start logging them in (creating if necessary)
@@ -96,7 +104,9 @@ class TwitterLogin extends WireData implements Module, ConfigurableModule {
 			} else {
 
 				// Something bad happened.
-				throw new WireException('TwitterLogin API error. HTTP code ' . $twoauth->http_code);
+				$this->session->error('TwitterLogin API error. HTTP code ' . $twoauth->http_code);
+				$this->doRedirect();
+				return;
 			}
 		}
 	}
@@ -233,14 +243,7 @@ class TwitterLogin extends WireData implements Module, ConfigurableModule {
 		// Log them in
 		$this->session->login($u->name, $pass);
 
-		// Redirect to chosen page
-		$p = $this->pages->get($this->redirectPage);
-		if ( ! $p->id) {
-			$p = $this->pages->get(1);
-		}
-
-		$this->debug("Redirecting to {$p->httpUrl}");
-		$this->session->redirect($p->httpUrl);
+		$this->doRedirect();
 	}
 
 
@@ -277,6 +280,23 @@ class TwitterLogin extends WireData implements Module, ConfigurableModule {
         } else {
             $event->return = false;
         }
+    }
+
+
+    /**
+     * Execute the redirect to the configured page
+     *
+     */
+	private function doRedirect() {
+
+    	// Redirect to configured page
+		$p = $this->pages->get($this->redirectPage);
+		if ( ! $p->id) {
+			$p = $this->pages->get(1);
+		}
+
+		$this->debug("Redirecting to {$p->httpUrl}");
+		$this->session->redirect($p->httpUrl);
     }
 
 
