@@ -248,48 +248,48 @@ class TwitterLogin extends WireData implements Module, ConfigurableModule {
 
 
 	/**
-     * Hook into the auth process to allow us to log users in.
-     *
-     * This works by setting a temporary "password" for the user in the session.
-     * We check those against the values we supply ourself and return true.
-     *
-     * @param object $event     ProcessWire event
-     * @return bool
-     *
-     */
-    public function authenticate($event) {
+	 * Hook into the auth process to allow us to log users in.
+	 *
+	 * This works by setting a temporary "password" for the user in the session.
+	 * We check those against the values we supply ourself and return true.
+	 *
+	 * @param object $event     ProcessWire event
+	 * @return bool
+	 *
+	 */
+	public function authenticate($event) {
 
-    	$this->debug("hooked authenticate");
+		$this->debug("hooked authenticate");
 
-        if ($event->return) return;     // already authenticated
+		if ($event->return) return;     // already authenticated
 
-        $sess_name = $this->session->get('tmp_name');
-        $sess_pass = $this->session->get('tmp_pass');
+		$sess_name = $this->session->get('tmp_name');
+		$sess_pass = $this->session->get('tmp_pass');
 
-    	$this->debug("Sess name is $sess_name");
-    	$this->debug("Sess pass is $sess_pass");
+		$this->debug("Sess name is $sess_name");
+		$this->debug("Sess pass is $sess_pass");
 
-        $user = $event->arguments('user');
-        $pass = $event->arguments('pass');
+		$user = $event->arguments('user');
+		$pass = $event->arguments('pass');
 
-        if ($sess_name == $user->name && $sess_pass == $pass) {
-        	$this->debug('match');
-            $this->session->remove('sess_name');
-            $this->session->remove('sess_pass');
-            $event->return = true;
-        } else {
-            $event->return = false;
-        }
-    }
+		if ($sess_name == $user->name && $sess_pass == $pass) {
+			$this->debug('match');
+			$this->session->remove('sess_name');
+			$this->session->remove('sess_pass');
+			$event->return = true;
+		} else {
+			$event->return = false;
+		}
+	}
 
 
-    /**
-     * Execute the redirect to the configured page
-     *
-     */
+	/**
+	 * Execute the redirect to the configured page
+	 *
+	 */
 	private function doRedirect() {
 
-    	// Redirect to configured page
+		// Redirect to configured page
 		$p = $this->pages->get($this->redirectPage);
 		if ( ! $p->id) {
 			$p = $this->pages->get(1);
@@ -297,7 +297,7 @@ class TwitterLogin extends WireData implements Module, ConfigurableModule {
 
 		$this->debug("Redirecting to {$p->httpUrl}");
 		$this->session->redirect($p->httpUrl);
-    }
+	}
 
 
 	static public function getModuleConfigInputfields(Array $data) {
